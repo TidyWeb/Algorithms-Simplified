@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Machine-learning algorithms, made practical</title>
+  <style>
+    :root { --ink:#111; --paper:#f6f6f2; --white:#fff; --soft:#e9e9e3; --line:#c7c7bf; --quiet:#64645e; --signal:#d9ff38; --signal-ink:#324000; --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace; --sans:'Instrument Sans','Avenir Next','Helvetica Neue',Arial,sans-serif; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; color:var(--ink); background:var(--paper); font:17px/1.55 var(--sans); }
+    a { color:inherit; }
+    code { font:.88em var(--mono); }
+    .skip { position:fixed; z-index:20; top:-4rem; left:1rem; padding:.5rem .75rem; color:var(--ink); background:var(--signal); }
+    .skip:focus { top:0; }
+    .shell { display:grid; grid-template-columns:14.25rem minmax(0,1fr); min-height:100vh; }
+    .rail { position:sticky; top:0; display:flex; flex-direction:column; height:100vh; padding:1.25rem 1rem 1rem; color:#f4f4ee; background:var(--ink); }
+    .rail-top { display:flex; gap:.7rem; align-items:center; padding-bottom:1.15rem; border-bottom:1px solid #4a4a45; text-decoration:none; }
+    .mark { display:grid; width:2.35rem; height:2.35rem; place-items:center; color:var(--ink); background:var(--signal); font:700 .72rem/1 var(--mono); letter-spacing:-.08em; }
+    .rail-kicker,.rail-title { display:block; margin:0; }
+    .rail-kicker { color:var(--signal); font:500 .61rem/1.25 var(--mono); letter-spacing:.09em; text-transform:uppercase; }
+    .rail-title { margin-top:.22rem; font-size:.88rem; font-weight:600; line-height:1.15; }
+    .rail nav { margin-top:1.5rem; }
+    .rail ol { margin:0; padding:0; list-style:none; }
+    .rail li + li { margin-top:.12rem; }
+    .rail li a { display:grid; grid-template-columns:1.6rem 1fr; gap:.42rem; padding:.5rem .3rem; color:#d3d3cc; text-decoration:none; font-size:.79rem; line-height:1.25; border-left:2px solid transparent; }
+    .rail li a:hover,.rail li a:focus { color:#fff; background:#242421; border-left-color:var(--signal); outline:none; }
+    .rail li span { color:var(--signal); font:.61rem/1.55 var(--mono); }
+    .rail-note { margin:1.2rem .3rem; color:#9d9d95; font-size:.72rem; line-height:1.45; }
+    .tidy { display:flex; gap:.52rem; align-items:center; margin-top:auto; padding:.9rem .25rem 0; color:#a8a8a0; border-top:1px solid #4a4a45; font-size:.65rem; line-height:1.25; text-decoration:none; }
+    .tidy img { width:1.7rem; height:1.7rem; object-fit:contain; filter:grayscale(1) contrast(1.1); }
+    main { min-width:0; overflow:hidden; background-image:linear-gradient(#0000 95%,rgb(17 17 17 / .045) 95%),linear-gradient(90deg,#0000 95%,rgb(17 17 17 / .045) 95%); background-size:100% 2rem,2rem 100%; }
+    .topline { display:flex; justify-content:space-between; gap:1rem; padding:.72rem clamp(1.25rem,5vw,5rem); color:#e7e7e2; background:var(--ink); font:.65rem var(--mono); letter-spacing:.07em; text-transform:uppercase; }
+    .topline span:last-child { color:var(--signal); }
+    .hero { display:grid; grid-template-columns:minmax(0,1fr) minmax(23rem,.78fr); gap:clamp(1.5rem,4vw,5rem); align-items:end; max-width:91rem; margin:auto; padding:clamp(3rem,7vw,8rem) clamp(1.25rem,5vw,5rem) 4rem; }
+    .hero .eyebrow { margin:0 0 .85rem; color:var(--quiet); font:.67rem var(--mono); letter-spacing:.1em; text-transform:uppercase; }
+    h1,h2,h3,p { margin-top:0; }
+    .hero h1 { max-width:50rem; margin-bottom:1.4rem; font-size:clamp(3.2rem,8.2vw,7.8rem); font-weight:600; letter-spacing:-.075em; line-height:.86; }
+    .hero h1 .outline { color:transparent; -webkit-text-stroke:1.6px var(--ink); }
+    .hero .lede { max-width:38rem; margin-bottom:0; font-size:clamp(1.06rem,1.6vw,1.28rem); line-height:1.48; }
+    .model-card { position:relative; display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:.45rem; align-items:center; min-height:13rem; padding:1rem; color:#f6f6f2; background:var(--ink); outline:1px solid var(--ink); outline-offset:7px; }
+    .model-card::before { position:absolute; top:.55rem; left:.7rem; content:'THE CENTRAL IDEA'; color:var(--signal); font:.6rem var(--mono); letter-spacing:.09em; }
+    .model-card b { display:block; padding:1.35rem .35rem .5rem; text-align:center; font:600 clamp(.82rem,1.4vw,1.05rem)/1.05 var(--sans); }
+    .model-card b small { display:block; margin-top:.38rem; color:#aaa; font:.62rem var(--mono); }
+    .model-card i { color:var(--signal); font:1.8rem/1 var(--mono); font-style:normal; }
+    .model-card .model { color:var(--ink); background:var(--signal); }
+    .model-card footer { position:absolute; right:.8rem; bottom:.65rem; left:.8rem; margin:0; padding-top:.6rem; color:#adada6; border-top:1px solid #44443f; font:.63rem/1.35 var(--mono); }
+    .content { max-width:91rem; margin:auto; padding:0 clamp(1.25rem,5vw,5rem) 5rem; }
+    .content > section:not(.record) { scroll-margin-top:1rem; counter-increment:section; padding:5rem 0; border-top:1px solid var(--ink); }
+    .content { counter-reset:section; }
+    .content > section:not(.record)::before { display:block; margin-bottom:.9rem; content:counter(section,decimal-leading-zero); color:var(--quiet); font:500 2rem/.82 var(--mono); letter-spacing:-.12em; }
+    h2 { max-width:55rem; margin-bottom:1rem; font-size:clamp(2.15rem,4.5vw,4.7rem); font-weight:600; letter-spacing:-.06em; line-height:.94; }
+    h3 { font-size:1.32rem; line-height:1; letter-spacing:-.035em; }
+    p { max-width:72ch; }
+    .record { display:grid; grid-template-columns:repeat(auto-fit,minmax(12rem,1fr)); gap:0; margin:1.5rem 0; border:1px solid var(--ink); background:var(--white); }
+    .record div { padding:.8rem 1rem; border-right:1px solid var(--ink); }
+    .record div:last-child { border-right:0; }
+    .record strong { display:block; color:var(--quiet); font:.6rem var(--mono); letter-spacing:.07em; text-transform:uppercase; }
+    .note { max-width:70rem; margin:1.25rem 0; padding:.85rem 0 .15rem 1rem; border-left:3px solid var(--ink); }
+    .note strong { background:var(--signal); }
+    .note.green,.note.gold { border-left-color:var(--ink); }
+    .contents { margin:1.25rem 0 0; padding:1rem; border:1px solid var(--ink); background:var(--white); }
+    .contents strong { display:block; margin-bottom:.35rem; font:.65rem var(--mono); text-transform:uppercase; }
+    .contents ol { margin:.2rem 0 0; columns:2; column-gap:3rem; }
+    .contents li { break-inside:avoid; margin:.22rem 0; }
+    .grid { display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(235px,1fr)); }
+    .grid.two { grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); }
+    .card { padding:1rem; border:1px solid var(--ink); background:var(--white); }
+    .card .tag { color:var(--quiet); font:.6rem var(--mono); letter-spacing:.07em; text-transform:uppercase; }
+    .card p:last-child { margin-bottom:0; }
+    .card ul { margin:.65rem 0 0; padding-left:1.2rem; }
+    .family-card { min-height:0; }
+    .family-card .memory { margin-top:.7rem; padding-top:.65rem; border-top:1px solid var(--ink); color:var(--quiet); font-size:.94rem; }
+    .table-wrap { overflow-x:auto; border:1px solid var(--ink); background:var(--white); }
+    table { width:100%; min-width:680px; border-collapse:collapse; }
+    th,td { padding:.78rem .9rem; text-align:left; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { background:var(--soft); font:.63rem var(--mono); letter-spacing:.06em; text-transform:uppercase; }
+    tr:last-child td { border-bottom:0; }
+    .small,figcaption { color:var(--quiet); font-size:.84rem; }
+    figure { margin:1.5rem 0; }
+    .diagram { padding:1rem; overflow-x:auto; border:1px solid var(--ink); background:var(--white); }
+    .diagram svg { display:block; width:100%; height:auto; min-width:620px; filter:grayscale(1); }
+    .diagram svg.colour-centres { filter:none; }
+    .diagram.narrow-svg svg { min-width:0; }
+    .legend { display:flex; flex-wrap:wrap; gap:10px 18px; margin-top:12px; color:var(--quiet); font:.75rem var(--mono); }
+    .legend span { display:inline-flex; align-items:center; gap:6px; }
+    .swatch { width:14px; height:14px; display:inline-block; border:2px solid currentColor; }
+    .swatch.dot { border-radius:50%; }
+    .flow { display:grid; grid-template-columns:repeat(5,1fr); gap:0; margin:2rem 0 .7rem; border:1px solid var(--ink); background:var(--white); }
+    .flow-step { position:relative; min-height:9rem; padding:1rem; border-right:1px solid var(--ink); }
+    .flow-step:last-child { border-right:0; }
+    .flow-step:not(:last-child)::after { position:absolute; right:-.65rem; top:35%; z-index:2; padding:.1rem .25rem; color:var(--ink); background:var(--signal); content:'→'; font:1rem var(--mono); }
+    .flow-step strong { display:block; color:var(--quiet); font:.6rem var(--mono); letter-spacing:.06em; text-transform:uppercase; }
+    .algorithm-row { display:grid; grid-template-columns:1.15fr .85fr; gap:2rem; align-items:start; }
+    .mini-formula { margin:1rem 0; padding:.85rem 1rem; border-left:3px solid var(--ink); background:var(--soft); }
+    pre { margin:0; padding:1.3rem; overflow:auto; color:#f0f0ec; background:var(--ink); font:.8rem/1.67 var(--mono); }
+    code { padding:.12em .35em; background:var(--soft); }
+    .metric-grid { display:grid; gap:0; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); border-top:1px solid var(--ink); border-left:1px solid var(--ink); }
+    .metric { padding:1rem; border-right:1px solid var(--ink); border-bottom:1px solid var(--ink); background:var(--white); }
+    .metric strong { display:block; color:var(--quiet); font:.65rem var(--mono); letter-spacing:.05em; text-transform:uppercase; }
+    .practice { padding:1rem; border:1px solid var(--ink); background:var(--white); }
+    .practice ol { margin:.3rem 0; padding-left:1.35rem; }
+    .practice li { margin:.75rem 0; }
+    details { padding:1rem; border:1px solid var(--ink); background:var(--white); }
+    summary { cursor:pointer; font-weight:650; }
+    .answer { margin-top:1rem; padding-left:1rem; border-left:3px solid var(--ink); }
+    footer { margin-top:3rem; padding-top:1rem; color:var(--quiet); border-top:1px solid var(--ink); font:.72rem var(--mono); }
+    @media (max-width:1280px) { .flow { grid-template-columns:repeat(3,1fr); } .flow-step { border-bottom:1px solid var(--ink); } .flow-step:nth-child(3),.flow-step:last-child { border-right:0; } .flow-step:nth-child(4),.flow-step:nth-child(5) { border-bottom:0; } .flow-step:nth-child(3)::after { display:none; } }
+    @media (max-width:760px) { .shell { display:block; } .rail { position:relative; display:grid; grid-template-columns:1fr auto; height:auto; padding:.85rem 1rem; } .rail nav,.rail-note { display:none; } .rail-top { padding:0; border:0; } .tidy { margin:0; padding:0; border:0; } .tidy span { display:none; } .hero { grid-template-columns:1fr; padding-block:3.5rem; } .content > section:not(.record) { padding-block:3.5rem; } .flow { grid-template-columns:repeat(2,1fr); } .flow-step:nth-child(3) { border-right:1px solid var(--ink); } .flow-step:nth-child(2),.flow-step:nth-child(4) { border-right:0; } .flow-step:nth-child(4) { border-bottom:1px solid var(--ink); } .algorithm-row { grid-template-columns:1fr; } .record { grid-template-columns:repeat(2,1fr); } .record div:nth-child(2) { border-right:0; } .record div:nth-child(-n+2) { border-bottom:1px solid var(--ink); } }
+    @media (max-width:440px) { .topline span:first-child { display:none; } .hero h1 { font-size:3.6rem; } .contents ol { columns:1; } .flow,.record { grid-template-columns:1fr; } .flow-step,.flow-step:nth-child(n) { min-height:0; border-right:0; border-bottom:1px solid var(--ink); } .flow-step:last-child { border-bottom:0; } .flow-step:not(:last-child)::after { content:'↓'; right:auto; top:auto; bottom:-.65rem; left:50%; transform:translateX(-50%); } .diagram svg { min-width:0; } .diagram:not(.narrow-svg) { overflow-x:auto; } }
+  </style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the guide</a>
+<div class="shell">
+  <aside class="rail" aria-label="Guide sections">
+    <a class="rail-top" href="#main" aria-label="Back to the start of this guide">
+      <span class="mark" aria-hidden="true">X→y</span>
+      <span><span class="rail-kicker">ML / 02</span><span class="rail-title">Algorithm<br>working picture</span></span>
+    </a>
+    <nav aria-label="On this page"><ol>
+      <li><a href="#table"><span>01</span> Start with the table</a></li>
+      <li><a href="#task-map"><span>02</span> Name the task</a></li>
+      <li><a href="#families"><span>03</span> See the families</a></li>
+      <li><a href="#regression"><span>04</span> Predict a number</a></li>
+      <li><a href="#classification"><span>05</span> Choose a class</a></li>
+      <li><a href="#trees"><span>06</span> Ask tree questions</a></li>
+      <li><a href="#kmeans"><span>07</span> Find groups</a></li>
+      <li><a href="#selection"><span>08</span> Compare candidates</a></li>
+      <li><a href="#workflow"><span>09</span> Run safely</a></li>
+      <li><a href="#quick-wins"><span>10</span> Find quick wins</a></li>
+      <li><a href="#practice"><span>11</span> Check yourself</a></li>
+    </ol></nav>
+    <p class="rail-note">A visual, plain-English guide to the algorithm section before code.</p>
+    <a class="tidy" href="https://github.com/TidyWeb/" target="_blank" rel="noopener"><img src="assets/tidyweb_logo.png" alt="TidyWeb logo"><span>© TidyWeb<br>Learning library</span></a>
+  </aside>
+
+  <main id="main">
+    <div class="topline"><span>Advanced Data Analysis Techniques</span><span>Algorithms / before code</span></div>
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Machine learning / a first working picture</p>
+        <h1>Make the<br><span class="outline">choice</span><br>visible.</h1>
+        <p class="lede">Different algorithms do different jobs. Some predict numbers, some choose between categories, and some find groups. Machine learning uses examples to produce answers, so the first step is to decide what kind of answer you need: a number, a category, or a group. The picture beside this paragraph shows the basic idea: start with examples, decide what sort of answer you want, use an algorithm to produce it, and check whether the answers are useful. This guide explains what each algorithm does and when it might be useful.</p>
+      </div>
+      <div class="model-card" aria-label="Data becomes a task, a fitted model, and a checked prediction">
+        <b>data<small>examples X</small></b><i>→</i><b class="model">task<small>number / class / group</small></b><i>→</i><b>checked<br>answer<small>prediction ŷ</small></b>
+        <footer>The algorithm is a means to an answer. The test tells you whether the answer is useful on examples it has not already seen.</footer>
+      </div>
+    </header>
+
+    <div class="content">
+
+  <section class="record" aria-label="Guide record">
+    <div><strong>Built</strong>21 September 2026</div>
+    <div><strong>Source lessons</strong>Three LMS transcript captures</div>
+    <div><strong>Approach</strong>Plain English first; technical name second</div>
+    <div><strong>Scope</strong>Concepts, selection, evaluation, and quick wins</div>
+  </section>
+
+  <div class="note"><strong>How to read this guide.</strong> The LMS transcripts remain the source record. This page joins them into one learning journey and adds a clearly labelled companion layer where a learner needs a missing bridge, a visual explanation, or a safer practical warning.</div>
+
+  <nav class="contents" aria-label="Guide contents">
+    <strong>On this page</strong>
+    <ol>
+      <li><a href="#table">One table, three questions</a></li>
+      <li><a href="#families">The algorithm family map</a></li>
+      <li><a href="#regression">Predicting a number</a></li>
+      <li><a href="#classification">Choosing a category</a></li>
+      <li><a href="#trees">Asking questions with trees</a></li>
+      <li><a href="#kmeans">Finding groups with K-Means</a></li>
+      <li><a href="#selection">Choosing and comparing</a></li>
+      <li><a href="#workflow">From data to a trustworthy result</a></li>
+      <li><a href="#traps">Three traps to recognise</a></li>
+      <li><a href="#quick-wins">Finding quick wins</a></li>
+      <li><a href="#practice">Recall and transfer</a></li>
+    </ol>
+  </nav>
+
+  <section id="table">
+    <h2>Start with one familiar table</h2>
+    <p>Imagine a small collection of houses. Each row describes one house. The table is the same throughout this guide; only the question changes.</p>
+    <div class="table-wrap">
+      <table aria-label="House price example table">
+        <thead><tr><th>House</th><th>Bedrooms</th><th>Area (m²)</th><th>Age (years)</th><th>Sale price</th></tr></thead>
+        <tbody>
+          <tr><td>A</td><td>2</td><td>72</td><td>18</td><td>£210,000</td></tr>
+          <tr><td>B</td><td>3</td><td>96</td><td>10</td><td>£285,000</td></tr>
+          <tr><td>C</td><td>4</td><td>140</td><td>10</td><td>£395,000</td></tr>
+          <tr><td>D</td><td>3</td><td>110</td><td>5</td><td>£335,000</td></tr>
+          <tr><td>E</td><td>2</td><td>80</td><td>25</td><td>£225,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small"><strong>When making a prediction, we give the model information that is already available, such as a house’s number of bedrooms, area, and age. We keep the answer we want to estimate—its sale price—separate. Otherwise, we would be showing the model the answer in advance.</strong></p>
+  </section>
+
+  <section id="task-map">
+    <h2>The first question: what kind of answer do we need?</h2>
+    <p>Before asking “Which algorithm?”, ask “What answer should come out?” That one question narrows the search far more usefully than starting with a favourite model.</p>
+    <figure class="diagram" aria-labelledby="task-map-caption">
+      <svg viewBox="0 0 960 270" role="img" aria-labelledby="task-map-title task-map-desc">
+        <title id="task-map-title">Three machine-learning task routes</title>
+        <desc id="task-map-desc">A starting dataset leads to three questions: a number leads to regression, a named category leads to classification, and no known answer with a search for natural groups leads to clustering.</desc>
+        <defs><marker id="arrow-task" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#d65332"/></marker></defs>
+        <rect x="24" y="98" width="170" height="74" rx="12" fill="#edf3f8" stroke="#245c8d" stroke-width="2"/>
+        <text x="109" y="127" text-anchor="middle" font-weight="700" fill="#172238">Examples in a</text><text x="109" y="151" text-anchor="middle" font-weight="700" fill="#172238">dataset</text>
+        <path d="M194 135 H265" stroke="#d65332" stroke-width="3" marker-end="url(#arrow-task)"/>
+        <rect x="270" y="72" width="180" height="145" rx="12" fill="#fff" stroke="#d65332" stroke-width="2"/>
+        <text x="360" y="101" text-anchor="middle" font-weight="700" fill="#172238">What answer do</text><text x="360" y="125" text-anchor="middle" font-weight="700" fill="#172238">we need?</text><text x="360" y="157" text-anchor="middle" fill="#596579">number</text><text x="360" y="179" text-anchor="middle" fill="#596579">category</text><text x="360" y="201" text-anchor="middle" fill="#596579">or group</text>
+        <path d="M450 110 H520" stroke="#d65332" stroke-width="3" marker-end="url(#arrow-task)"/><path d="M450 135 H520" stroke="#d65332" stroke-width="3" marker-end="url(#arrow-task)"/><path d="M450 160 H520" stroke="#d65332" stroke-width="3" marker-end="url(#arrow-task)"/>
+        <rect x="525" y="28" width="190" height="64" rx="12" fill="#fff" stroke="#25734d" stroke-width="2"/><text x="620" y="55" text-anchor="middle" font-weight="700" fill="#172238">A number</text><text x="620" y="77" text-anchor="middle" fill="#25734d">REGRESSION</text>
+        <rect x="525" y="103" width="190" height="64" rx="12" fill="#fff" stroke="#62468c" stroke-width="2"/><text x="620" y="130" text-anchor="middle" font-weight="700" fill="#172238">A named category</text><text x="620" y="152" text-anchor="middle" fill="#62468c">CLASSIFICATION</text>
+        <rect x="525" y="178" width="190" height="64" rx="12" fill="#fff" stroke="#8a641b" stroke-width="2"/><text x="620" y="205" text-anchor="middle" font-weight="700" fill="#172238">Natural groups</text><text x="620" y="227" text-anchor="middle" fill="#8a641b">CLUSTERING</text>
+        <path d="M715 60 H760" stroke="#d65332" stroke-width="2" marker-end="url(#arrow-task)"/><path d="M715 135 H760" stroke="#d65332" stroke-width="2" marker-end="url(#arrow-task)"/><path d="M715 210 H760" stroke="#d65332" stroke-width="2" marker-end="url(#arrow-task)"/>
+        <text x="775" y="65" fill="#596579">How much?</text><text x="775" y="140" fill="#596579">Which one?</text><text x="775" y="215" fill="#596579">Which belong together?</text>
+      </svg>
+      <figcaption id="task-map-caption">The task type is the first branch. It does not choose the final algorithm by itself; it gives us the right family of candidates.</figcaption>
+    </figure>
+    <div class="grid three">
+      <article class="card family-card"><div class="tag">Known answer: number</div><h3>Regression</h3><p>Use known examples to estimate a numerical value, such as a sale price.</p><div class="memory"><strong>Memory hook:</strong> “What number is likely?”</div></article>
+      <article class="card family-card"><div class="tag">Known answer: category</div><h3>Classification</h3><p>Use known examples to choose between named possibilities, such as yes/no.</p><div class="memory"><strong>Memory hook:</strong> “Which category is likely?”</div></article>
+      <article class="card family-card"><div class="tag">No answer supplied</div><h3>Clustering</h3><p>Group similar examples when nobody has supplied the group names in advance.</p><div class="memory"><strong>Memory hook:</strong> “Which belong together?”</div></article>
+    </div>
+  </section>
+
+  <section id="families">
+    <h2>The algorithm family map</h2>
+    <p>These are the core families from the LMS section. The short purpose sits directly under each name so you can see the set before we study the members in detail.</p>
+    <section class="grid">
+      <article class="card"><div class="tag">Regression</div><h3>Linear regression</h3><p>Estimate a number by finding a useful straight-line relationship between clues and an answer.</p></article>
+      <article class="card"><div class="tag">Classification</div><h3>Logistic regression</h3><p>Estimate a probability, then turn it into a category such as “flat” or “house”.</p></article>
+      <article class="card"><div class="tag">Classification or regression</div><h3>Decision tree</h3><p>Ask a sequence of simple questions until an example reaches a result.</p></article>
+      <article class="card"><div class="tag">Many trees</div><h3>Random forest / bagging</h3><p>Ask many trees separately and combine their answers for a steadier result.</p></article>
+      <article class="card"><div class="tag">Many trees</div><h3>Boosting</h3><p>Build trees one after another, with each new tree paying attention to earlier mistakes.</p></article>
+      <article class="card"><div class="tag">Unsupervised learning</div><h3>K-Means</h3><p>Choose a number of groups and move their centres until nearby examples settle together.</p></article>
+    </section>
+    <div class="note gold"><strong>Important boundary.</strong> This is a starter family, not every algorithm in machine learning. Neural networks, convolutional neural networks, anomaly detection, text models, and time-series models are signposted later as companion topics rather than squeezed into these explanations.</div>
+  </section>
+
+  <section id="regression">
+    <h2>Predicting a number: linear regression</h2>
+    <div class="algorithm-row">
+      <div>
+        <p>Suppose we want to estimate the sale price of a new house. Linear regression looks at old examples, finds the most useful straight-line pattern in them, and uses that line to estimate a new number.</p>
+        <p>“Fitting a line” is just a compact way of saying: <strong>try to place one line so that the total gap between the line and the old examples is as small as possible.</strong> Each gap is an error. The model learns working numbers that control the line; those numbers are called coefficients.</p>
+        <div class="mini-formula"><strong>Plain picture:</strong> house details → a line through old examples → estimated sale price</div>
+        <p>With one clue, such as area, this is <strong>single</strong> linear regression. With several clues, such as area, bedrooms, and age, it is <strong>multiple</strong> linear regression. The idea stays the same: estimate a number from several clues.</p>
+      </div>
+      <figure class="diagram narrow-svg" aria-labelledby="line-caption">
+        <svg viewBox="0 0 470 300" role="img" aria-labelledby="line-title line-desc">
+          <title id="line-title">A useful line through house examples</title>
+          <desc id="line-desc">Dots represent old houses. A rising line represents the model's estimated relationship between area and sale price. A new house can be placed against the line to estimate its price.</desc>
+          <line x1="58" y1="245" x2="435" y2="245" stroke="#172238" stroke-width="2"/><line x1="58" y1="245" x2="58" y2="30" stroke="#172238" stroke-width="2"/>
+          <text x="245" y="282" text-anchor="middle" fill="#596579">area →</text><text x="17" y="145" transform="rotate(-90 17 145)" text-anchor="middle" fill="#596579">sale price</text>
+          <line x1="78" y1="221" x2="417" y2="57" stroke="#d65332" stroke-width="4"/>
+          <circle cx="115" cy="207" r="7" fill="#245c8d"/><circle cx="150" cy="217" r="7" fill="#245c8d"/><circle cx="195" cy="173" r="7" fill="#245c8d"/><circle cx="255" cy="154" r="7" fill="#245c8d"/><circle cx="318" cy="111" r="7" fill="#245c8d"/><circle cx="370" cy="91" r="7" fill="#245c8d"/>
+          <text x="250" y="48" fill="#d65332" font-weight="700">model’s useful line</text>
+          <line x1="318" y1="111" x2="318" y2="129" stroke="#d65332" stroke-dasharray="4 4"/><text x="326" y="143" fill="#596579">one error gap</text>
+        </svg>
+        <figcaption id="line-caption">The line does not pass through every point. Its job is to make a useful estimate for the pattern as a whole.</figcaption>
+      </figure>
+    </div>
+    <div class="grid two">
+      <article class="card"><h3>Good starting point when…</h3><p>A roughly straight relationship is plausible, the data is tabular, and you value a model that is relatively easy to inspect.</p></article>
+      <article class="card"><h3>Watch out for…</h3><p>A curved or complicated pattern, extreme outliers, or a claim that a coefficient proves causation. A line describes an association in the data; it does not automatically explain why the world behaves that way.</p></article>
+    </div>
+  </section>
+
+  <section id="classification">
+    <h2>Choosing a category: logistic regression</h2>
+    <div class="algorithm-row">
+      <div>
+        <p>Now change the question. Instead of asking “What price is likely?”, ask “Is this property a flat or a house?” The answer has two classes: <strong>flat</strong> and <strong>house</strong>.</p>
+        <p>Logistic regression first produces a number between 0 and 1 that we can read as a chance. A rule called a <strong>threshold</strong> then turns that chance into a final class. A threshold of 0.5 is a possible starting point, not a sacred law.</p>
+        <p>If a false alarm is costly—for example, sending a legitimate email to spam—you may use a stricter threshold. If missing a genuinely urgent request is more costly, you may choose a rule that catches more possible positives.</p>
+      </div>
+      <figure class="diagram narrow-svg" aria-labelledby="probability-caption">
+        <svg viewBox="0 0 470 300" role="img" aria-labelledby="probability-title probability-desc">
+          <title id="probability-title">Probability becoming a classification</title>
+          <desc id="probability-desc">An S-shaped probability curve rises from near zero to near one. A labelled threshold line at 0.5 divides the decisions into no and yes.</desc>
+          <line x1="58" y1="245" x2="435" y2="245" stroke="#172238" stroke-width="2"/><line x1="58" y1="245" x2="58" y2="30" stroke="#172238" stroke-width="2"/>
+          <text x="245" y="282" text-anchor="middle" fill="#596579">strength of clues →</text><text x="18" y="145" transform="rotate(-90 18 145)" text-anchor="middle" fill="#596579">chance</text>
+          <text x="42" y="250" text-anchor="end" fill="#596579">0</text><text x="42" y="48" text-anchor="end" fill="#596579">1</text><line x1="58" y1="138" x2="435" y2="138" stroke="#8a641b" stroke-width="2" stroke-dasharray="7 6"/><text x="390" y="130" fill="#8a641b">threshold 0.5</text>
+          <path d="M70 229 C145 229 175 222 205 200 C235 178 238 101 270 79 C300 58 335 66 410 50" fill="none" stroke="#62468c" stroke-width="4"/>
+          <text x="85" y="265" fill="#62468c" font-weight="700">NO</text><text x="390" y="38" fill="#62468c" font-weight="700">YES</text>
+        </svg>
+        <figcaption id="probability-caption">The curve gives a chance; the threshold turns that chance into the category used by the service.</figcaption>
+      </figure>
+    </div>
+    <div class="note"><strong>Plain-English translation of “logistic”.</strong> It names the S-shaped function used to turn a model’s score into a probability between 0 and 1. The important beginner idea is the two-step route: <strong>chance first, category second.</strong></div>
+  </section>
+
+  <section id="trees">
+    <h2>Asking questions with trees</h2>
+    <p>A decision tree behaves like a flowchart. It asks a question, follows the answer down a branch, asks another question, and eventually reaches a prediction. For the house example, a simple tree might ask whether the area is large and whether the property has several bedrooms.</p>
+    <figure class="diagram narrow-svg" aria-labelledby="tree-caption">
+      <svg viewBox="0 0 850 300" role="img" aria-labelledby="tree-title tree-desc">
+        <title id="tree-title">A decision tree for property type</title>
+        <desc id="tree-desc">The tree first asks whether the area is large. The yes and no branches lead to a second question or a flat result. The final leaves say flat or house.</desc>
+        <defs><marker id="arrow-tree" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#245c8d"/></marker></defs>
+        <rect x="300" y="22" width="250" height="60" rx="12" fill="#edf3f8" stroke="#245c8d" stroke-width="2"/><text x="425" y="49" text-anchor="middle" font-weight="700" fill="#172238">Is the area large?</text><text x="425" y="70" text-anchor="middle" fill="#596579">first question</text>
+        <path d="M350 82 L205 145" stroke="#245c8d" stroke-width="2" marker-end="url(#arrow-tree)"/><path d="M500 82 L645 145" stroke="#245c8d" stroke-width="2" marker-end="url(#arrow-tree)"/>
+        <text x="262" y="111" fill="#245c8d" font-weight="700">YES</text><text x="555" y="111" fill="#245c8d" font-weight="700">NO</text>
+        <rect x="72" y="145" width="250" height="60" rx="12" fill="#fff" stroke="#245c8d" stroke-width="2"/><text x="197" y="172" text-anchor="middle" font-weight="700" fill="#172238">At least 3 bedrooms?</text><text x="197" y="193" text-anchor="middle" fill="#596579">second question</text>
+        <rect x="528" y="145" width="250" height="60" rx="12" fill="#fff" stroke="#25734d" stroke-width="2"/><text x="653" y="172" text-anchor="middle" font-weight="700" fill="#172238">Flat</text><text x="653" y="193" text-anchor="middle" fill="#25734d">final category</text>
+        <path d="M135 205 L100 252" stroke="#245c8d" stroke-width="2" marker-end="url(#arrow-tree)"/><path d="M260 205 L315 252" stroke="#245c8d" stroke-width="2" marker-end="url(#arrow-tree)"/>
+        <text x="107" y="232" fill="#245c8d" font-weight="700">YES</text><text x="274" y="232" fill="#245c8d" font-weight="700">NO</text>
+        <rect x="25" y="252" width="150" height="38" rx="10" fill="#fff" stroke="#62468c" stroke-width="2"/><text x="100" y="276" text-anchor="middle" fill="#62468c" font-weight="700">House</text>
+        <rect x="240" y="252" width="150" height="38" rx="10" fill="#fff" stroke="#25734d" stroke-width="2"/><text x="315" y="276" text-anchor="middle" fill="#25734d" font-weight="700">Flat</text>
+      </svg>
+      <figcaption id="tree-caption">Each branch has a label. The tree is useful because the route from evidence to result can be read as a sequence of questions.</figcaption>
+    </figure>
+    <div class="grid two">
+      <article class="card"><h3>Overfitting in everyday language</h3><p>A tree can keep asking more and more specific questions until it memorises old houses. It may look brilliant on the examples it saw and then stumble on a new property. Limiting depth or comparing on unseen data helps check whether it has learned a pattern rather than a list of exceptions.</p></article>
+      <article class="card"><h3>When trees become a team</h3><p>One tree is easy to picture, but one tree can be unstable. Ensemble methods combine several trees. The next panels show the two important routes: many separate opinions (bagging) and a chain of corrections (boosting).</p></article>
+    </div>
+  </section>
+
+  <section id="ensembles">
+    <h2>Many trees: bagging, random forests, and boosting</h2>
+    <p><strong>Ensemble</strong> simply means a group of models used together. The difference is how the group is built and how the models learn from one another.</p>
+    <figure class="diagram" aria-labelledby="ensemble-caption">
+      <svg viewBox="0 0 1080 350" role="img" aria-labelledby="ensemble-title ensemble-desc">
+        <title id="ensemble-title">Bagging compared with boosting</title>
+        <desc id="ensemble-desc">On the left, several trees receive separate sample views and their answers join at one combined result. On the right, trees are connected in sequence, with each new tree learning from earlier mistakes.</desc>
+        <defs><marker id="arrow-ensemble" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#d65332"/></marker></defs>
+        <text x="275" y="28" text-anchor="middle" font-size="19" font-weight="700" fill="#245c8d">BAGGING / RANDOM FOREST</text>
+        <text x="805" y="28" text-anchor="middle" font-size="19" font-weight="700" fill="#62468c">BOOSTING</text>
+        <rect x="30" y="135" width="155" height="80" rx="11" fill="#edf3f8" stroke="#245c8d" stroke-width="2"/><text x="107" y="160" text-anchor="middle" font-weight="700" fill="#172238">sample</text><text x="107" y="181" text-anchor="middle" font-weight="700" fill="#172238">views</text><text x="107" y="202" text-anchor="middle" fill="#596579">different slices</text>
+        <rect x="230" y="55" width="120" height="60" rx="9" fill="#fff" stroke="#245c8d" stroke-width="2"/><text x="290" y="91" text-anchor="middle" fill="#245c8d" font-weight="700">Tree 1</text>
+        <rect x="230" y="135" width="120" height="60" rx="9" fill="#fff" stroke="#245c8d" stroke-width="2"/><text x="290" y="171" text-anchor="middle" fill="#245c8d" font-weight="700">Tree 2</text>
+        <rect x="230" y="215" width="120" height="60" rx="9" fill="#fff" stroke="#245c8d" stroke-width="2"/><text x="290" y="251" text-anchor="middle" fill="#245c8d" font-weight="700">Tree 3</text>
+        <path d="M185 175 L230 85" stroke="#d65332" stroke-width="2" marker-end="url(#arrow-ensemble)"/><path d="M185 175 H230" stroke="#d65332" stroke-width="2" marker-end="url(#arrow-ensemble)"/><path d="M185 175 L230 245" stroke="#d65332" stroke-width="2" marker-end="url(#arrow-ensemble)"/>
+        <path d="M350 85 L390 175" stroke="#d65332" stroke-width="2" marker-end="url(#arrow-ensemble)"/><path d="M350 165 H390" stroke="#d65332" stroke-width="2" marker-end="url(#arrow-ensemble)"/><path d="M350 245 L390 175" stroke="#d65332" stroke-width="2" marker-end="url(#arrow-ensemble)"/>
+        <rect x="390" y="135" width="170" height="80" rx="11" fill="#fff" stroke="#25734d" stroke-width="2"/><text x="475" y="160" text-anchor="middle" font-weight="700" fill="#172238">combined</text><text x="475" y="181" text-anchor="middle" font-weight="700" fill="#172238">answer</text><text x="475" y="202" text-anchor="middle" fill="#25734d">vote or average</text>
+        <rect x="570" y="135" width="150" height="80" rx="11" fill="#edf3f8" stroke="#62468c" stroke-width="2"/><text x="645" y="160" text-anchor="middle" font-weight="700" fill="#172238">first</text><text x="645" y="181" text-anchor="middle" font-weight="700" fill="#172238">attempt</text><text x="645" y="202" text-anchor="middle" fill="#596579">same starting data</text>
+        <rect x="760" y="135" width="120" height="80" rx="11" fill="#fff" stroke="#62468c" stroke-width="2"/><text x="820" y="165" text-anchor="middle" fill="#62468c" font-weight="700">Tree 1</text><text x="820" y="190" text-anchor="middle" fill="#596579">finds errors</text>
+        <rect x="930" y="135" width="120" height="80" rx="11" fill="#fff" stroke="#62468c" stroke-width="2"/><text x="990" y="165" text-anchor="middle" fill="#62468c" font-weight="700">Tree 2</text><text x="990" y="190" text-anchor="middle" fill="#596579">corrects them</text>
+        <path d="M720 175 H760" stroke="#d65332" stroke-width="2" marker-end="url(#arrow-ensemble)"/><path d="M880 175 H930" stroke="#d65332" stroke-width="2" marker-end="url(#arrow-ensemble)"/>
+        <text x="855" y="250" text-anchor="middle" fill="#596579">then another tree, and another…</text>
+        <text x="275" y="320" text-anchor="middle" fill="#245c8d">separate opinions → one steadier answer</text>
+        <text x="805" y="320" text-anchor="middle" fill="#62468c">a sequence of corrections → improved answer</text>
+      </svg>
+      <figcaption id="ensemble-caption">Bagging reduces wobble by combining separate trees. Boosting builds a chain, which can be powerful but needs care because too many corrections can overfit.</figcaption>
+    </figure>
+    <div class="grid two">
+      <article class="card"><h3>Random forest in plain English</h3><p>Build many trees from slightly different samples of rows and available features, then combine their answers. The randomness helps stop one historical quirk from controlling the whole result.</p></article>
+      <article class="card"><h3>Boosting in plain English</h3><p>Build a small tree, look at its mistakes, build the next tree to pay more attention to those mistakes, and repeat. It can give strong results, but running too many rounds can make it learn noise.</p></article>
+    </div>
+  </section>
+
+  <section id="kmeans">
+    <h2>Finding groups: K-Means</h2>
+    <p>If nobody has supplied a target column, we cannot train against a known answer in the usual supervised way. If the useful question is “Which examples resemble one another?”, clustering becomes a candidate. K-Means is one of the simplest ways to demonstrate the idea.</p>
+    <ol>
+      <li>Choose <strong>K</strong>, the number of groups to try.</li>
+      <li>Place one temporary centre in each group.</li>
+      <li>Give each example its nearest centre.</li>
+      <li>Move each centre towards the examples assigned to it, then repeat.</li>
+      <li>Stop when the assignments and centres settle rather than continuing to move meaningfully.</li>
+    </ol>
+    <figure class="diagram" aria-labelledby="kmeans-caption">
+      <svg class="colour-centres" viewBox="0 0 960 310" role="img" aria-labelledby="kmeans-title kmeans-desc">
+        <title id="kmeans-title">K-Means centre movement</title>
+        <desc id="kmeans-desc">The left panel shows examples and three temporary centres. The right panel shows three settled groups, with a differently coloured centre for each group and leader lines that identify the centres without covering the points.</desc>
+        <defs><marker id="arrow-centre-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#25734d"/></marker><marker id="arrow-centre-b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#245c8d"/></marker><marker id="arrow-centre-c" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#d65332"/></marker></defs>
+        <text x="240" y="28" text-anchor="middle" font-size="19" font-weight="700" fill="#8a641b">BEFORE: temporary centres</text><text x="720" y="28" text-anchor="middle" font-size="19" font-weight="700" fill="#25734d">AFTER: groups settle</text>
+        <rect x="30" y="48" width="420" height="235" rx="14" fill="#fff" stroke="#d9e0eb"/><rect x="510" y="48" width="420" height="235" rx="14" fill="#fff" stroke="#d9e0eb"/>
+        <g fill="#245c8d"><circle cx="100" cy="100" r="7"/><circle cx="130" cy="130" r="7"/><circle cx="160" cy="115" r="7"/><circle cx="120" cy="160" r="7"/></g>
+        <g fill="#62468c"><circle cx="230" cy="210" r="7"/><circle cx="270" cy="235" r="7"/><circle cx="295" cy="200" r="7"/><circle cx="255" cy="180" r="7"/></g>
+        <g fill="#d65332"><circle cx="350" cy="100" r="7"/><circle cx="380" cy="130" r="7"/><circle cx="340" cy="155" r="7"/><circle cx="395" cy="165" r="7"/></g>
+        <g fill="#fff" stroke="#8a641b" stroke-width="4"><circle cx="185" cy="85" r="11"/><circle cx="225" cy="125" r="11"/><circle cx="310" cy="150" r="11"/></g>
+        <text x="185" y="60" text-anchor="middle" fill="#8a641b" font-weight="700">centre 1</text><text x="225" y="112" text-anchor="middle" fill="#8a641b" font-weight="700">centre 2</text><text x="310" y="138" text-anchor="middle" fill="#8a641b" font-weight="700">centre 3</text>
+        <path d="M450 165 H500" stroke="#d65332" stroke-width="4" marker-end="url(#arrow-task)"/><text x="475" y="150" text-anchor="middle" fill="#d65332" font-weight="700">repeat</text>
+        <g fill="#245c8d"><circle cx="580" cy="100" r="7"/><circle cx="610" cy="130" r="7"/><circle cx="640" cy="115" r="7"/><circle cx="600" cy="160" r="7"/></g>
+        <g fill="#62468c"><circle cx="710" cy="210" r="7"/><circle cx="750" cy="235" r="7"/><circle cx="775" cy="200" r="7"/><circle cx="735" cy="180" r="7"/></g>
+        <g fill="#d65332"><circle cx="850" cy="100" r="7"/><circle cx="880" cy="130" r="7"/><circle cx="840" cy="155" r="7"/><circle cx="895" cy="165" r="7"/></g>
+        <g stroke="#fff" stroke-width="3"><circle cx="608" cy="126" r="12" fill="#25734d"/><circle cx="742" cy="206" r="12" fill="#245c8d"/><circle cx="866" cy="138" r="12" fill="#d65332"/></g>
+        <path d="M628 80 L614 114" stroke="#25734d" stroke-width="2" marker-end="url(#arrow-centre-a)"/><text x="530" y="76" fill="#25734d" font-weight="700">Group A centre</text>
+        <path d="M742 258 V222" stroke="#245c8d" stroke-width="2" marker-end="url(#arrow-centre-b)"/><text x="650" y="274" fill="#245c8d" font-weight="700">Group B centre</text>
+        <path d="M820 80 L858 125" stroke="#d65332" stroke-width="2" marker-end="url(#arrow-centre-c)"/><text x="820" y="76" fill="#d65332" font-weight="700">Group C centre</text>
+      </svg>
+      <div class="legend" aria-label="K-Means legend"><span><i class="swatch dot" style="color:#245c8d"></i> examples in one group</span><span><i class="swatch dot" style="color:#62468c"></i> examples in another group</span><span><i class="swatch dot" style="color:#d65332"></i> examples in a third group</span><span><i class="swatch" style="color:#8a641b"></i> temporary centre</span></div>
+      <figcaption id="kmeans-caption">K-Means assumes that nearby points are more alike. The groups are mathematical results; a person still has to decide whether they mean anything useful for the business.</figcaption>
+    </figure>
+    <div class="grid two">
+      <article class="card"><h3>Strengths</h3><p>It is comparatively simple and can be quick on large datasets.</p></article>
+      <article class="card"><h3>Limits</h3><p>You must choose K; starting centres can affect the result; outliers can pull centres; and the method works best when groups have a shape its distance rule can represent.</p></article>
+    </div>
+  </section>
+
+  <section id="selection">
+    <h2>Choosing and comparing algorithms</h2>
+    <p>The LMS describes a useful first map, but the word <strong>suitable</strong> does not mean “automatically best”. Two candidates can both be sensible and still differ in accuracy, speed, interpretability, sensitivity to scaling, and the kinds of mistakes they make.</p>
+    <div class="flow" aria-label="Algorithm selection workflow">
+      <div class="flow-step"><strong>1 · Define</strong>What decision or answer matters?</div>
+      <div class="flow-step"><strong>2 · Inspect</strong>What shape is the data? What is missing?</div>
+      <div class="flow-step"><strong>3 · Baseline</strong>What does a simple reference result achieve?</div>
+      <div class="flow-step"><strong>4 · Compare</strong>Try a small set of plausible candidates.</div>
+      <div class="flow-step"><strong>5 · Check</strong>Measure, inspect errors, then decide.</div>
+    </div>
+    <div class="table-wrap">
+      <table aria-label="Algorithm selection questions">
+        <thead><tr><th>Question</th><th>What it changes</th></tr></thead>
+        <tbody>
+          <tr><td>Is the target a number?</td><td>Start in the regression family: linear regression, tree regressors, or tree ensembles are candidates.</td></tr>
+          <tr><td>Is the target a named class?</td><td>Start in classification: logistic regression, trees, ensembles, or suitable neural networks may be candidates.</td></tr>
+          <tr><td>Is there no target and the aim is to discover groups?</td><td>Start in clustering, with K-Means as one possible candidate rather than an automatic answer.</td></tr>
+          <tr><td>Is the input an image?</td><td>Computer-vision models such as convolutional neural networks may be appropriate; transfer learning can help when the task dataset is small.</td></tr>
+          <tr><td>What kind of mistake is costly?</td><td>Choose evaluation measures and decision thresholds that reflect the real consequence, not just a convenient score.</td></tr>
+          <tr><td>How much data is available?</td><td>Quantity, quality, representativeness, class balance, pattern complexity, and evaluation design matter. There is no universal row-count rule.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small">The official scikit-learn estimator map calls itself a rough guide. Its purpose is to help you make a shortlist, not to replace testing on your own data.</p>
+  </section>
+
+  <section id="workflow">
+    <h2>From data to a trustworthy result</h2>
+    <p>“Fit a model” is only one part of the work. A reliable process keeps preparation, learning, evaluation, and prediction connected.</p>
+    <figure class="diagram narrow-svg" aria-labelledby="pipeline-caption">
+      <svg viewBox="0 0 960 190" role="img" aria-labelledby="pipeline-title pipeline-desc">
+        <title id="pipeline-title">A machine-learning workflow</title>
+        <desc id="pipeline-desc">Data is split into training and test examples, preparation is learned from training data, a model is fitted, predictions are evaluated, and only then is the model considered for use.</desc>
+        <defs><marker id="arrow-pipeline" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#d65332"/></marker></defs>
+        <rect x="20" y="62" width="125" height="64" rx="11" fill="#edf3f8" stroke="#245c8d" stroke-width="2"/><text x="82" y="89" text-anchor="middle" font-weight="700" fill="#172238">data</text><text x="82" y="111" text-anchor="middle" fill="#596579">rows and clues</text>
+        <path d="M145 94 H185" stroke="#d65332" stroke-width="3" marker-end="url(#arrow-pipeline)"/>
+        <rect x="190" y="62" width="145" height="64" rx="11" fill="#fff" stroke="#245c8d" stroke-width="2"/><text x="262" y="89" text-anchor="middle" font-weight="700" fill="#172238">split</text><text x="262" y="111" text-anchor="middle" fill="#596579">train | test</text>
+        <path d="M335 94 H375" stroke="#d65332" stroke-width="3" marker-end="url(#arrow-pipeline)"/>
+        <rect x="380" y="62" width="145" height="64" rx="11" fill="#fff" stroke="#245c8d" stroke-width="2"/><text x="452" y="89" text-anchor="middle" font-weight="700" fill="#172238">prepare</text><text x="452" y="111" text-anchor="middle" fill="#596579">learn from train only</text>
+        <path d="M525 94 H565" stroke="#d65332" stroke-width="3" marker-end="url(#arrow-pipeline)"/>
+        <rect x="570" y="62" width="125" height="64" rx="11" fill="#fff" stroke="#62468c" stroke-width="2"/><text x="632" y="89" text-anchor="middle" font-weight="700" fill="#172238">fit</text><text x="632" y="111" text-anchor="middle" fill="#596579">learn pattern</text>
+        <path d="M695 94 H735" stroke="#d65332" stroke-width="3" marker-end="url(#arrow-pipeline)"/>
+        <rect x="740" y="62" width="190" height="64" rx="11" fill="#fff" stroke="#25734d" stroke-width="2"/><text x="835" y="89" text-anchor="middle" font-weight="700" fill="#172238">predict and evaluate</text><text x="835" y="111" text-anchor="middle" fill="#25734d">unseen test examples</text>
+      </svg>
+      <figcaption id="pipeline-caption">A pipeline is the repeatable route connecting preparation, fitting, and prediction. Keeping the steps together helps prevent inconsistent preparation and data leakage.</figcaption>
+    </figure>
+    <div class="grid two">
+      <article class="card"><h3>What “pipeline” means</h3><p>It is not storage, a user interface, or physical infrastructure. It is a repeatable chain of preparation and modelling steps that can be applied in the same order to training data and new data.</p></article>
+      <article class="card"><h3>What leakage means</h3><p>Leakage happens when information that would not be available at prediction time slips into training or evaluation. The score looks wonderful, but the model performs worse in real life. Split first, learn preparation from training data, and keep the test set untouched until the comparison is ready.</p></article>
+    </div>
+  </section>
+
+  <section id="evaluation">
+    <h2>How do we know whether it helped?</h2>
+    <p>A model is not “good” in the abstract. Its result has to be measured against a meaningful baseline and a metric that matches the decision.</p>
+    <div class="metric-grid">
+      <article class="metric"><strong>Regression: MAE</strong>Average size of the error, in the target’s units. Easy to explain: “about 6 minutes out.”</article>
+      <article class="metric"><strong>Regression: RMSE</strong>Like an error average, but large misses count more heavily.</article>
+      <article class="metric"><strong>Regression: R²</strong>How much variation the model explains compared with a simple baseline. It is not a percentage of accuracy.</article>
+      <article class="metric"><strong>Classification: accuracy</strong>How often the model is right overall. It can mislead when one class is much more common.</article>
+      <article class="metric"><strong>Classification: precision</strong>When the model says “positive”, how often is that correct?</article>
+      <article class="metric"><strong>Classification: recall</strong>Of all the real positive cases, how many did the model find? Also called sensitivity.</article>
+    </div>
+    <div class="grid two" style="margin-top:16px">
+      <div class="table-wrap">
+        <table aria-label="Confusion matrix example">
+          <thead><tr><th></th><th>Actually no</th><th>Actually yes</th></tr></thead>
+          <tbody><tr><th>Predicted no</th><td>Correct no</td><td>Missed yes</td></tr><tr><th>Predicted yes</th><td>False alarm</td><td>Correct yes</td></tr></tbody>
+        </table>
+        <p class="small">A confusion matrix keeps the types of mistake visible instead of hiding them inside one score.</p>
+      </div>
+      <div class="card"><h3>Clustering is different</h3><p>There is no supplied “correct group” in ordinary unsupervised clustering. Measures such as silhouette score can help, but a person still has to inspect whether the groups make sense for the problem.</p></div>
+    </div>
+  </section>
+
+  <section id="traps">
+    <h2>Three traps to recognise</h2>
+    <p>These are not just vocabulary words. They describe different symptoms, so the first repair is different in each case.</p>
+    <div class="table-wrap">
+      <table aria-label="Overfitting underfitting and leakage comparison">
+        <thead><tr><th>What you notice</th><th>What may have happened</th><th>First sensible response</th></tr></thead>
+        <tbody>
+          <tr><td>Training score is high, new-data score is low</td><td><strong>Overfitting:</strong> the model learned old detail or noise too closely.</td><td>Try a simpler or more limited model, improve the examples, or use a suitable regularisation approach.</td></tr>
+          <tr><td>Training score and new-data score are both poor</td><td><strong>Underfitting:</strong> the model is too simple to capture the useful pattern.</td><td>Check the features and task definition, then compare a more suitable candidate.</td></tr>
+          <tr><td>Test score looks suspiciously perfect</td><td><strong>Data leakage:</strong> information from the future or test set slipped into model building.</td><td>Re-check the split and make sure preparation learns from training data only.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note gold"><strong>Baseline first.</strong> A baseline is a simple reference result—perhaps always predicting the most common class or the average number. A complicated model earns its place only when it improves the real outcome enough to justify its extra cost and complexity.</div>
+  </section>
+
+  <section id="quick-wins">
+    <h2>Finding quick wins</h2>
+    <p>The third LMS lesson moves from algorithms to practical opportunities. A quick win is a small, safe trial that solves a repeated problem and has a clear way to measure whether it helped.</p>
+    <section class="grid">
+      <article class="card"><div class="tag">Faster first replies</div><h3>Help-desk chatbot</h3><p>Handle routine questions such as password resets immediately, then give unusual or sensitive cases to a person. Natural-language processing means working with ordinary human language.</p></article>
+      <article class="card"><div class="tag">Less searching</div><h3>Document recommender</h3><p>Suggest policies, templates, or technical documents that people in a similar role often need. Real systems usually find a shortlist, then put it in a useful order. Permissions still apply.</p></article>
+      <article class="card"><div class="tag">Find the meaning</div><h3>Semantic search</h3><p>Search for the meaning of a question, not only its exact words, across emails, presentations, and documents that are not tidy database rows.</p></article>
+      <article class="card"><div class="tag">Start from evidence</div><h3>Existing reports</h3><p>Traditional reports may reveal a repeated decision with a useful target to predict. The algorithm comes after the problem and the test plan.</p></article>
+    </section>
+    <div class="note green"><strong>Quick-win checklist.</strong> Is the task repeated? Is the data available and permitted? Is the risk low enough for a pilot? Can we define success? Can a person review uncertainty or take over? Can the existing service continue if the trial fails?</div>
+  </section>
+
+  <section id="beyond">
+    <h2>Beyond this starter set</h2>
+    <p class="small">These are companion signposts, not full lessons. They belong here because algorithm choice also depends on the kind of input.</p>
+    <div class="grid">
+      <article class="card"><div class="tag">Images</div><h3>Convolutional neural networks</h3><p>Neural networks designed to learn useful local patterns in images. With limited task data, transfer learning can reuse features learned from a much larger image collection.</p></article>
+      <article class="card"><div class="tag">Unusual cases</div><h3>Anomaly detection</h3><p>Look for observations that differ sharply from what is normal, such as a faulty sensor reading or unusual transaction.</p></article>
+      <article class="card"><div class="tag">Other shapes</div><h3>Text and time series</h3><p>Text and time-ordered measurements carry structure of their own. The task type still matters, but the preparation and candidate families may change.</p></article>
+    </div>
+  </section>
+
+  <section id="practice">
+    <h2>Recall and transfer</h2>
+    <div class="practice">
+      <p><strong>Try to answer before opening the explanations.</strong></p>
+      <ol>
+        <li>We want to estimate the sale price of a new house. Which task family fits?</li>
+        <li>We want to decide whether a property is a flat or a house. Which task family fits?</li>
+        <li>No property-type labels are supplied, but we want to discover natural groups of similar houses. Which task family fits?</li>
+        <li>Why does a logistic model need a threshold after it has produced a probability?</li>
+        <li>In one sentence, how is bagging different from boosting?</li>
+        <li>What can go wrong if you scale or select features using the test data before evaluation?</li>
+        <li>A model has 98% accuracy because 98% of cases are “no”. What should you inspect next?</li>
+        <li>Give one safety question you would ask before turning a help-desk chatbot into a quick win.</li>
+      </ol>
+      <details class="answer-check">
+        <summary>Reveal answers and reasoning</summary>
+        <div class="answer">
+          <ol>
+            <li><strong>Regression</strong> — the target is a numerical amount.</li>
+            <li><strong>Classification</strong> — the target is a named class, such as yes/no.</li>
+            <li><strong>Clustering</strong> — the groups are discovered without supplied labels.</li>
+            <li>The probability is not yet the final class. The threshold is the rule that turns “how likely?” into “yes” or “no”.</li>
+            <li>Bagging asks many separately trained trees and combines their answers; boosting builds trees in sequence, with later trees responding to earlier mistakes.</li>
+            <li>The evaluation can leak information from the test set and look better than real-world performance. Split first and learn preparation from training data only.</li>
+            <li>Inspect the confusion matrix, precision, recall, and the actual cost of each error; accuracy alone is hiding the class imbalance.</li>
+            <li>For example: “Can a person review uncertain or sensitive answers and take over?” Other sensible answers include permissions, privacy, a measurable baseline, and a safe fallback.</li>
+          </ol>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="sources">
+    <h2>Source trail and further reading</h2>
+    <p>The three LMS captures are kept as source evidence. This page is the unified learning document; the links below let you check the original wording and the enrichment behind the bridges.</p>
+    <div class="grid two">
+      <div class="card">
+        <h3>Original LMS captures</h3>
+        <ul>
+          <li><a href="Most common Algorithms/raw-transcript.md">Most common Algorithms — raw transcript</a></li>
+          <li><a href="Selecting the Most Suitable Algorithm/raw-transcript.md">Selecting the Most Suitable Algorithm — raw transcript</a></li>
+          <li><a href="Finding Quick Wins/raw-transcript.md">Finding Quick Wins — raw transcript</a></li>
+          <li><a href="Machine Learning Basics Glossary.md">Machine Learning Basics Glossary</a></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Official enrichment</h3>
+        <ul>
+          <li><a href="https://scikit-learn.org/stable/machine_learning_map.html">scikit-learn: Choosing the right estimator</a></li>
+          <li><a href="https://scikit-learn.org/stable/user_guide.html">scikit-learn User Guide</a></li>
+          <li><a href="https://scikit-learn.org/stable/common_pitfalls.html">scikit-learn: Common pitfalls and recommended practices</a></li>
+          <li><a href="https://www.tensorflow.org/tutorials/images/cnn">TensorFlow: Convolutional Neural Network</a></li>
+          <li><a href="https://www.tensorflow.org/guide/keras/transfer_learning">TensorFlow: Transfer learning</a></li>
+          <li><a href="https://www.tensorflow.org/resources/recommendation-systems">TensorFlow: Recommendation systems</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>This unified guide was built from the authenticated LMS transcript captures and official documentation. It does not submit quizzes, alter LMS progress, or pretend that an algorithm can be chosen safely without testing the actual data and decision.</footer>
+    </div>
+</main>
+</div>
+</body>
+</html>
